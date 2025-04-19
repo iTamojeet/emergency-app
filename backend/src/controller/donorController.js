@@ -26,7 +26,7 @@ export const createDonorProfile = async (req, res) => {
       contactPreferences
     } = req.body;
 
-    
+  
     // Create donor profile
     const donor = new Donor({
       name,

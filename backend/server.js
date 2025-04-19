@@ -169,13 +169,28 @@ app.get('/api/donations', (req, res) => {
 
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/policereport')
-.then(() => {
-  console.log('MongoDB connected'); 
-})
-.catch((err) => {
-  console.error('DB connection error:', err);
-});
+// mongoose.connect('mongodb://localhost:27017/policereport')
+// .then(() => {
+//   console.log('MongoDB connected'); 
+// })
+// .catch((err) => {
+//   console.error('DB connection error:', err);
+// });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+
+// ✅ Connect to MongoDB Atlas using Mongoose
+async function connectDB() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ Connected to MongoDB Atlas successfully!");
+  } catch (error) {
+    console.error("❌ MongoDB connection error:", error);
+    process.exit(1); // Exit process on failure
+  }
+} 
+   
+connectDB();

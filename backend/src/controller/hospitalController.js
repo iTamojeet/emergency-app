@@ -7,19 +7,15 @@ import { validationResult } from 'express-validator';
  * @desc    Create hospital profile
  * @route   POST /api/hospitals
  */
+
 export const createHospitalProfile = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-
+  // console.log(req.body);
   try {
-    // Check if hospital profile already exists
-    const existingHospital = await Hospital.findOne({ user: req.user.id });
-    if (existingHospital) {
-      return res.status(400).json({ msg: 'Hospital profile already exists' });
-    }
-
+    
     const {
       name,
       licenseNumber,
@@ -33,9 +29,15 @@ export const createHospitalProfile = async (req, res) => {
       operatingHours
     } = req.body;
 
+    // Check if hospital profile already exists
+    const existingHospital = await Hospital.findOne({ name });
+    if (existingHospital) {
+      return res.status(400).json({ msg: 'Hospital profile already exists' });
+    }
+
     // Create hospital profile
     const hospital = new Hospital({
-      user: req.user.id,
+      // user: req.user.id,
       name,
       licenseNumber,
       location,
@@ -54,7 +56,7 @@ export const createHospitalProfile = async (req, res) => {
     res.status(201).json(hospital);
   } catch (err) {
     console.error('Create hospital profile error:', err);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: 'Server error dipro' });
   }
 };
 
