@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import hero from '../assets/hero.svg';
 
 const ServiceCard = ({ icon, title, description, link }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
@@ -71,9 +72,9 @@ const Home = () => {
             </div>
             <div className="hidden md:block">
               <img
-                src="https://placehold.co/600x400"
+                src={hero}
                 alt="Emergency Services"
-                className="rounded-lg shadow-md"
+                className="rounded-lg "
               />
             </div>
           </div>
