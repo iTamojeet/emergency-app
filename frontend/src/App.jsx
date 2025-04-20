@@ -6,6 +6,7 @@ import BloodDonation from './pages/BloodDonation'
 import BloodServices from './pages/BloodServices'
 import OrganTransplant from './pages/OrganTransplant'
 import Home from './pages/Home'
+import HospitalSearch from './pages/HospitalSearch'
 import Navbar from './components/Navbar'
 import PreRegister from './pages/PreRegister'
 import UserDashboard from './pages/user/UserDashboard'
@@ -19,6 +20,7 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/hospitals" element={<HospitalSearch />} />
           <Route path="/report" element={<EmergencyFIR />} />
           <Route path="/emergency" element={<EmergencyFIR />} />
           <Route path="/dashboard" element={<UserDashboard />} />
