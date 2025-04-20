@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import withAuth from '../../components/withAuth';
 
 const FIRCard = ({ fir, onView, onApprove, onReject, showActions = true }) => {
   const getStatusColor = (status) => {
@@ -277,4 +278,4 @@ const PoliceDashboard = () => {
   );
 };
 
-export default PoliceDashboard; 
+export default withAuth(PoliceDashboard, ['police']); 

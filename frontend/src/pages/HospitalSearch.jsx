@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MagnifyingGlassIcon, BuildingOffice2Icon, TruckIcon, HeartIcon } from '@heroicons/react/24/outline';
 import './HospitalSearch.css';
+import withAuth from '../components/withAuth';
 
 const sampleHospitals = [
   {
@@ -48,34 +49,29 @@ const HospitalSearch = ({ hospitals = sampleHospitals, onNavigate = () => {} }) 
   const [selectedHospital, setSelectedHospital] = useState(null);
   const [map, setMap] = useState(null);
   const [markers, setMarkers] = useState([]);
+  const [userLocation, setUserLocation] = useState(null);
+  const [directionsService, setDirectionsService] = useState(null);
+  const [directionsRenderer, setDirectionsRenderer] = useState(null);
+  const [distance, setDistance] = useState(null);
   const mapRef = useRef(null);
 
   useEffect(() => {
-    if (!searchQuery) {
-      setFilteredHospitals(hospitals);
-      return;
+    // Get user's current location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        }
+      );
     }
 
-    const filtered = hospitals
-      .map(hospital => {
-        const distance = calculateDistance(
-          hospital.lat,
-          hospital.lng,
-          22.5726,
-          88.3639
-        );
-        return { ...hospital, distance };
-      })
-      .filter(hospital => 
-        hospital.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        hospital.address.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .sort((a, b) => a.distance - b.distance);
-
-    setFilteredHospitals(filtered);
-  }, [searchQuery, hospitals]);
-
-  useEffect(() => {
+    // Initialize map
     if (hospitals.length === 0) return;
 
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -90,7 +86,7 @@ const HospitalSearch = ({ hospitals = sampleHospitals, onNavigate = () => {} }) 
     }
 
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,directions`;
     script.async = true;
     script.defer = true;
     script.onload = initializeMap;
@@ -119,6 +115,15 @@ const HospitalSearch = ({ hospitals = sampleHospitals, onNavigate = () => {} }) 
         zoomControl: true,
       });
       setMap(mapInstance);
+
+      // Initialize Directions Service and Renderer
+      const dirService = new window.google.maps.DirectionsService();
+      const dirRenderer = new window.google.maps.DirectionsRenderer({
+        map: mapInstance,
+        suppressMarkers: true
+      });
+      setDirectionsService(dirService);
+      setDirectionsRenderer(dirRenderer);
 
       const newMarkers = hospitals.map((hospital) => {
         const marker = new window.google.maps.Marker({
@@ -166,6 +171,33 @@ const HospitalSearch = ({ hospitals = sampleHospitals, onNavigate = () => {} }) 
       
       // Open this hospital's info window
       markerObj.infoWindow.open(map, markerObj.marker);
+
+      // If user location is available, show route
+      if (userLocation && directionsService && directionsRenderer) {
+        const request = {
+          origin: userLocation,
+          destination: { lat: hospital.lat, lng: hospital.lng },
+          travelMode: window.google.maps.TravelMode.DRIVING
+        };
+
+        directionsService.route(request, (result, status) => {
+          if (status === 'OK') {
+            directionsRenderer.setDirections(result);
+            const route = result.routes[0];
+            const distance = route.legs[0].distance.text;
+            setDistance(distance);
+          }
+        });
+      }
+    }
+  };
+
+  const handleNavigate = (hospital) => {
+    if (userLocation) {
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${hospital.lat},${hospital.lng}&travelmode=driving`;
+      window.open(url, '_blank');
+    } else {
+      alert('Please allow location access to use navigation');
     }
   };
 
@@ -272,6 +304,11 @@ const HospitalSearch = ({ hospitals = sampleHospitals, onNavigate = () => {} }) 
                     <p className="hospital-info">
                       Ambulance Number: {hospital.ambulanceNumber || 'N/A'}
                     </p>
+                    {selectedHospital?.id === hospital.id && distance && (
+                      <p className="hospital-info text-green-600">
+                        Distance: {distance}
+                      </p>
+                    )}
                   </div>
                   {hospital.firstAid && (
                     <span className="first-aid-badge">
@@ -282,7 +319,7 @@ const HospitalSearch = ({ hospitals = sampleHospitals, onNavigate = () => {} }) 
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onNavigate(hospital);
+                    handleNavigate(hospital);
                   }}
                   className="navigate-button"
                 >
@@ -302,4 +339,4 @@ const HospitalSearch = ({ hospitals = sampleHospitals, onNavigate = () => {} }) 
   );
 };
 
-export default HospitalSearch; 
+export default withAuth(HospitalSearch); 

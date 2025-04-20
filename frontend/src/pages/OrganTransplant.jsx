@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import withAuth from '../components/withAuth';
 
 const OrganTransplant = () => {
   const [formType, setFormType] = useState('donor'); // 'donor' or 'recipient'
@@ -239,4 +240,4 @@ const OrganTransplant = () => {
   );
 };
 
-export default OrganTransplant; 
+export default withAuth(OrganTransplant); 

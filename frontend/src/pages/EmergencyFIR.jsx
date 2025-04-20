@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LocationPicker from '../components/LocationPicker';
 import MediaUpload from '../components/MediaUpload';
 import { firService } from '../services/firService';
+import { useAuth } from '../context/AuthContext';
+import withAuth from '../components/withAuth';
 
 const EmergencyFIR = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     location: '',
@@ -16,6 +19,12 @@ const EmergencyFIR = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -74,6 +83,10 @@ const EmergencyFIR = () => {
       setLoading(false);
     }
   };
+
+  if (!isAuthenticated()) {
+    return null; // Will redirect to login due to useEffect
+  }
 
   return (
     <div className="min-h-screen p-8 bg-gray-50">
@@ -186,4 +199,4 @@ const EmergencyFIR = () => {
   );
 };
 
-export default EmergencyFIR; 
+export default withAuth(EmergencyFIR); 

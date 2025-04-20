@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import withAuth from '../../components/withAuth';
 
 const ICUBedCounter = ({ count, total }) => (
   <div className="bg-white rounded-lg shadow p-6">
@@ -298,4 +299,4 @@ const HospitalDashboard = () => {
   );
 };
 
-export default HospitalDashboard; 
+export default withAuth(HospitalDashboard, ['hospital']); 

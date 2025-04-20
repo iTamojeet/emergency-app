@@ -59,6 +59,12 @@ const Navbar = () => {
             <NavLink to="/report">Report</NavLink>
             <NavLink to="/dashboard">Dashboard</NavLink>
             <NavLink 
+              to="/login" 
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              Login/Register
+            </NavLink>
+            <NavLink 
               to="/emergency" 
               className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
             >
@@ -76,6 +82,13 @@ const Navbar = () => {
             <NavLink to="/organ-transplant" isMobile>Organ Transplant</NavLink>
             <NavLink to="/report" isMobile>Report</NavLink>
             <NavLink to="/dashboard" isMobile>Dashboard</NavLink>
+            <NavLink 
+              to="/login" 
+              className="bg-blue-600 text-white hover:bg-blue-700"
+              isMobile
+            >
+              Login/Register
+            </NavLink>
             <NavLink 
               to="/emergency" 
               className="bg-red-600 text-white hover:bg-red-700"

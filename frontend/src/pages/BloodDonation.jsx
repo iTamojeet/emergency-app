@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import withAuth from '../components/withAuth';
 
 const BloodDonation = () => {
   const [formData, setFormData] = useState({
@@ -216,4 +217,4 @@ const BloodDonation = () => {
   );
 };
 
-export default BloodDonation; 
+export default withAuth(BloodDonation); 

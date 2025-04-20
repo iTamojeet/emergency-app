@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { firService } from '../services/firService';
+import withAuth from '../components/withAuth';
 
 const Dashboard = () => {
   const [newFIRs, setNewFIRs] = useState([]);
@@ -167,4 +168,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default withAuth(Dashboard); 

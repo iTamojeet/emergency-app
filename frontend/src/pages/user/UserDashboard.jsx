@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import userService from '../../services/userService';
+import withAuth from '../../components/withAuth';
 
 const StatusBadge = ({ status }) => {
   const getStatusColor = () => {
@@ -262,4 +263,4 @@ const UserDashboard = () => {
   );
 };
 
-export default UserDashboard; 
+export default withAuth(UserDashboard, ['user']); 
