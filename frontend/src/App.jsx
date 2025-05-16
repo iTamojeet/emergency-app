@@ -1,7 +1,7 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import EmergencyFIR from './pages/EmergencyFIR'
-import Dashboard from './pages/Dashboard'
+
 import BloodDonation from './pages/BloodDonation'
 import BloodServices from './pages/BloodServices'
 import OrganTransplant from './pages/OrganTransplant'
