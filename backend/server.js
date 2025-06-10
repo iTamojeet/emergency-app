@@ -3,22 +3,20 @@ import mongoose from "mongoose"
 import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
-import { createServer } from 'http';
-import socketManager from './src/websocket/socketManager.js';
+import { connectDB } from './src/config/db.js';
+// import { createServer } from 'http';
+// import socketManager from './src/websocket/socketManager.js';
 
 
 //import routes
 
-import donorRoutes from './src/routes/donorRoutes.js';
-import hospitalRoutes from './src/routes/hospitalRoutes.js';
-import requestRoutes from './src/routes/requestRoutes.js';
-import matchRoutes from './src/routes/matchRoutes.js';
+import donationRoutes from './src/routes/donationRoutes.js';
 import emergencyRoutes from "./src/routes/firRoute.js"
 
-
 dotenv.config();
+
 const app = express();
-const httpServer = createServer(app);
+//const httpServer = createServer(app);
 
 // Middleware
 app.use(cors());
@@ -29,10 +27,11 @@ app.use(morgan('dev'));
 
 // Routes
 app.use('/api', emergencyRoutes);
-app.use('/api/donors', donorRoutes);
-app.use('/api/hospitals', hospitalRoutes);
-app.use('/api/requests', requestRoutes);
-app.use('/api/matches', matchRoutes);
+app.use('/api/donations', donationRoutes);
+
+// app.use('/api/hospitals', hospitalRoutes);
+// app.use('/api/requests', requestRoutes);
+// app.use('/api/matches', matchRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -40,16 +39,16 @@ app.get('/health', (req, res) => {
 });
 
 // Initialize socket.io
-new socketManager(httpServer);
+//new socketManager(httpServer);
 
 // Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({
-    message: err.message || 'Internal Server Error',
-    error: process.env.NODE_ENV === 'development' ? err : {}
-  });
-});
+// app.use((err, req, res, next) => {
+//   console.error(err.stack);
+//   res.status(err.status || 500).json({
+//     message: err.message || 'Internal Server Error',
+//     error: process.env.NODE_ENV === 'development' ? err : {}
+//   });
+// });
 
 
 // Mock Database - Real Hospitals in Kolkata   (TOMO)
@@ -155,17 +154,17 @@ app.get('/api/diprohospitals', (req, res) => {
   }
 });
 
-app.get('/api/donations', (req, res) => {
-  try {
-    res.json({
-      bloodDonors: 1254,
-      organDonors: 487,
-      transplants: 326
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch donation statistics' });
-  }
-});
+// app.get('/api/donations', (req, res) => {
+//   try {
+//     res.json({
+//       bloodDonors: 1254,
+//       organDonors: 487,
+//       transplants: 326
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Failed to fetch donation statistics' });
+//   }
+// });
 
 
 // Connect to MongoDB
@@ -178,19 +177,10 @@ app.get('/api/donations', (req, res) => {
 // });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
 
 // ✅ Connect to MongoDB Atlas using Mongoose
-async function connectDB() {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ Connected to MongoDB Atlas successfully!");
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
-    process.exit(1); // Exit process on failure
-  }
-} 
-   
-connectDB();
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+});
