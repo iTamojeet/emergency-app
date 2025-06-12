@@ -6,12 +6,19 @@ import morgan from 'morgan';
 import { connectDB } from './src/config/db.js';
 // import { createServer } from 'http';
 // import socketManager from './src/websocket/socketManager.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import smsRoutes from './src/routes/smsRoutes.js';
+
+
+// ES Modules path configuration
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 //import routes
-
 import donationRoutes from './src/routes/donationRoutes.js';
-import emergencyRoutes from "./src/routes/firRoute.js"
+//import emergencyRoutes from "./src/routes/firRoute.js"
 
 dotenv.config();
 
@@ -24,10 +31,14 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(morgan('dev'));
+//FOR EJS USE ONLY 
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'src', 'views'));
 
 // Routes
-app.use('/api', emergencyRoutes);
+//app.use('/api', emergencyRoutes);
 app.use('/api/donations', donationRoutes);
+app.use('/', smsRoutes);                             //SMS Route
 
 // app.use('/api/hospitals', hospitalRoutes);
 // app.use('/api/requests', requestRoutes);
