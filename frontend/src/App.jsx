@@ -1,44 +1,56 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import EmergencyFIR from './pages/EmergencyFIR'
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useUser } from '@clerk/clerk-react';
 
-import BloodDonation from './pages/BloodDonation'
-import BloodServices from './pages/BloodServices'
-import OrganTransplant from './pages/OrganTransplant'
-import Home from './pages/Home'
-import HospitalSearch from './pages/HospitalSearch'
-import Login from './pages/Login'
-import Navbar from './components/Navbar'
-import PreRegister from './pages/PreRegister'
-import UserDashboard from './pages/user/UserDashboard'
-import PoliceDashboard from './pages/admin/PoliceDashboard'
-import HospitalDashboard from './pages/admin/HospitalDashboard'
-import { AuthProvider } from './context/AuthContext'
+import Navbar from './components/Navbar';
+import Home from './pages/Home/Home';
+import Dashboard from './pages/dashboard/Dashboard';
+import Donation from './pages/donation/Donation';
+import Emergency from './pages/emergency/Emergency';
+import SignInPage from './auth/sign-in';
 
-function App() {
-  return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/hospitals" element={<HospitalSearch />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/report" element={<EmergencyFIR />} />
-            <Route path="/emergency" element={<EmergencyFIR />} />
-            <Route path="/dashboard" element={<UserDashboard />} />
-            <Route path="/blood-donation" element={<BloodDonation />} />
-            <Route path="/blood-services" element={<BloodServices />} />
-            <Route path="/organ-transplant" element={<OrganTransplant />} />
-            <Route path="/register" element={<PreRegister />} />
-            <Route path="/admin/dashboard" element={<PoliceDashboard />} />
-            <Route path="/admin/hospital" element={<HospitalDashboard />} />
-          </Routes>
-        </div>
-      </Router>
-    </AuthProvider>
-  )
+
+function ProtectedRoute({ children }) {
+  const { isLoaded, isSignedIn } = useUser();
+
+  if (!isLoaded) return <div>Loading...</div>;
+  if (!isSignedIn) return <Navigate to="/sign-in" replace />;
+  return children;
 }
 
-export default App
+export default function App() {
+  return (
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/sign-in" element={<SignInPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/donation"
+          element={
+            <ProtectedRoute>
+              <Donation />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/emergency"
+          element={
+            <ProtectedRoute>
+              <Emergency />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </>
+  );
+}
