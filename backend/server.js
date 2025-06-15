@@ -1,5 +1,4 @@
 import express from "express";
-import mongoose from "mongoose"
 import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -9,6 +8,7 @@ import { connectDB } from './src/config/db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import smsRoutes from './src/routes/smsRoutes.js';
+import hospitalFetchRoute from './src/routes/hospitalFetchRoute.js';
 
 
 // ES Modules path configuration
@@ -38,7 +38,8 @@ app.set('views', path.join(__dirname, 'src', 'views'));
 // Routes
 //app.use('/api', emergencyRoutes);
 app.use('/api/donations', donationRoutes);
-app.use('/', smsRoutes);                             //SMS Route
+app.use('/', smsRoutes);
+app.use('/api', hospitalFetchRoute);                        //SMS Route
 
 // app.use('/api/hospitals', hospitalRoutes);
 // app.use('/api/requests', requestRoutes);
@@ -61,109 +62,6 @@ app.get('/health', (req, res) => {
 //   });
 // });
 
-
-// Mock Database - Real Hospitals in Kolkata   (TOMO)
-const hospitals = [
-  {
-    id: 1,
-    name: "AMRI Hospital, Salt Lake",
-    beds: 350,
-    oxygen: true,
-    lat: 22.5726,
-    lng: 88.3639,
-    address: "16/1, Broadway Rd, Hatiara, Kolkata, West Bengal 700157"
-  },
-  {
-    id: 2,
-    name: "Fortis Hospital, Anandapur",
-    beds: 400,
-    oxygen: true,
-    lat: 22.5112,
-    lng: 88.3947,
-    address: "730, Anandapur, E.M. Bypass, Kolkata, West Bengal 700107"
-  },
-  {
-    id: 3,
-    name: "Apollo Gleneagles Hospitals",
-    beds: 500,
-    oxygen: true,
-    lat: 22.5362,
-    lng: 88.3527,
-    address: "58, Canal Circular Rd, Kadapara, Phool Bagan, Kankurgachi, Kolkata, West Bengal 700054"
-  },
-  {
-    id: 4,
-    name: "Medica Superspecialty Hospital",
-    beds: 400,
-    oxygen: true,
-    lat: 22.5362,
-    lng: 88.3527,
-    address: "127, Mukundapur, E.M. Bypass, Kolkata, West Bengal 700099"
-  },
-  {
-    id: 5,
-    name: "Woodlands Multispeciality Hospital",
-    beds: 200,
-    oxygen: true,
-    lat: 22.5204,
-    lng: 88.3462,
-    address: "8/5, Alipore Road, Kolkata, West Bengal 700027"
-  },
-  {
-    id: 6,
-    name: "Peerless Hospital",
-    beds: 300,
-    oxygen: true,
-    lat: 22.4569,
-    lng: 88.3903,
-    address: "360, Panchasayar, Garia, Kolkata, West Bengal 700094"
-  },
-  {
-    id: 7,
-    name: "Ruby General Hospital",
-    beds: 250,
-    oxygen: true,
-    lat: 22.4997,
-    lng: 88.3247,
-    address: "E.M. Bypass, Kasba, Kolkata, West Bengal 700078"
-  },
-  {
-    id: 8,
-    name: "Belle Vue Clinic",
-    beds: 150,
-    oxygen: true,
-    lat: 22.5431,
-    lng: 88.3402,
-    address: "9, Dr. U. N. Brahmachari Street, Kolkata, West Bengal 700017"
-  },
-  {
-    id: 9,
-    name: "Calcutta Medical Research Institute",
-    beds: 200,
-    oxygen: true,
-    lat: 22.5362,
-    lng: 88.3527,
-    address: "7/2, Diamond Harbour Road, Kolkata, West Bengal 700027"
-  },
-  {
-    id: 10,
-    name: "SSKM Hospital",
-    beds: 1000,
-    oxygen: true,
-    lat: 22.5739,
-    lng: 88.3639,
-    address: "A.J.C. Bose Road, Bhowanipore, Kolkata, West Bengal 700020"
-  }
-];
-
-// API Endpoints
-app.get('/api/diprohospitals', (req, res) => {
-  try {
-    res.json(hospitals);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch hospitals' });
-  }
-});
 
 // app.get('/api/donations', (req, res) => {
 //   try {
