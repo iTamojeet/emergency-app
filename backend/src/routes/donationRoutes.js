@@ -3,14 +3,16 @@ import {
   createDonations,
   getAllDonations,
   updateDonationStatus,
-  confirmDonationResponse
+  confirmDonationResponse,
+  getUserDonations
 } from '../controller/donationController.js';
 
 const router = express.Router();
 
-router.post('/', createDonations); // User creates request
-router.get('/', getAllDonations); // Admin gets all requests
-router.put('/:id/status', updateDonationStatus); // Admin updates status
-router.put('/:id/confirm', confirmDonationResponse); // User confirms result
+router.post('/', createDonations); // Clerk user creates donation
+router.get('/', getAllDonations); // Admin fetches all
+router.get('/mine', getUserDonations); // Logged-in user's own requests
+router.put('/:id/status', updateDonationStatus); // Admin status update
+router.put('/:id/confirm', confirmDonationResponse); // User confirms
 
 export default router;

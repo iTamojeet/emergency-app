@@ -1,9 +1,10 @@
+// models/DonationRequest.js
 import mongoose from 'mongoose';
 
 const donationRequestSchema = new mongoose.Schema({
   type: { type: String, enum: ['blood', 'organ'], required: true },
-  user: { type: String, required: true }, // can be user ID, name, or email
-  details: { type: String }, // e.g. blood group or organ type
+  userId: { type: String, required: true }, // Clerk user.id (not email or name)
+  details: { type: String },
   status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
   adminRemarks: { type: String },
   confirmedByUser: { type: Boolean, default: false }
