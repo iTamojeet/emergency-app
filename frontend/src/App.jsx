@@ -10,6 +10,7 @@ import Donation from './pages/donation/Donation';
 import Emergency from './pages/emergency/Emergency';
 import SignInPage from './auth/sign-in';
 import Profile from './pages/user/Profile';
+import AdminDashboard from './pages/Hospital/AdminDashboard';
 
 export default function App() {
   return (
@@ -51,6 +52,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/hospital/admin/dashboard" element={<AdminDashboard />} />
 
         {/* Catch-all route to redirect unknown paths to home */}
         <Route path="*" element={<Navigate to="/" />} />
