@@ -11,6 +11,8 @@ import Emergency from './pages/emergency/Emergency';
 import SignInPage from './auth/sign-in';
 import Profile from './pages/user/Profile';
 import AdminDashboard from './pages/Hospital/AdminDashboard';
+import HospitalReg from './pages/Hospital/HospitalReg';
+import PoliceReg from './pages/Police/PoliceReg';
 
 export default function App() {
   return (
@@ -54,9 +56,16 @@ export default function App() {
         />
 
         <Route path="/hospital/admin/dashboard" element={<AdminDashboard />} />
+        
+        <Route path="/hospital/registration" element={<HospitalReg />} />
+
+        <Route path="/police/registration" element={<PoliceReg />} />
 
         {/* Catch-all route to redirect unknown paths to home */}
         <Route path="*" element={<Navigate to="/" />} />
+
+        
+
       </Routes>
     </div>
   );
