@@ -58,11 +58,11 @@ function Dashboard() {
       ) : donations.length === 0 ? (
         <p>You have not submitted any donation requests yet.</p>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 ">
           {donations.map((donation) => (
             <div
               key={donation._id}
-              className="border p-4 rounded shadow-sm bg-white"
+              className="border p-4 rounded flex flex-col shadow-sm bg-white"
             >
               <p><strong>Type:</strong> {donation.type}</p>
               <p><strong>Details:</strong> {donation.details}</p>
@@ -80,10 +80,17 @@ function Dashboard() {
                   {donation.status}
                 </span>
               </p>
-              
-              <p className="text-sm text-gray-400">
+
+              <div className='flex justify-between'>
+                <p className="text-sm text-gray-400">
                 Submitted on: {new Date(donation.createdAt).toLocaleString()}
               </p>
+              <p className="text-sm text-gray-400">
+                Updated at: {new Date(donation.updatedAt).toLocaleString()}
+              </p>
+              </div>
+              
+              
             </div>
           ))}
         </div>
