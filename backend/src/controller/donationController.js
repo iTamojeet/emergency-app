@@ -1,9 +1,9 @@
 import DonationRequest from '../models/DonationRequest.js';
 
-// Create new donation request (Clerk user ID from req.auth.userId)
+// ✅ Create new donation request (userId comes from body)
 export const createDonations = async (req, res) => {
   try {
-    const userId = req.body.userId; // ← accept from frontend instead of Clerk
+    const userId = req.body.userId;
 
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized. No user ID provided.' });
@@ -20,8 +20,7 @@ export const createDonations = async (req, res) => {
   }
 };
 
-
-// Get all donation requests (Admin use)
+// ✅ Admin fetch: Get all donations
 export const getAllDonations = async (req, res) => {
   try {
     const donations = await DonationRequest.find().sort({ createdAt: -1 });
@@ -31,13 +30,13 @@ export const getAllDonations = async (req, res) => {
   }
 };
 
-// Get donations for logged-in user
+// ✅ Get donations for a specific user (read from query param)
 export const getUserDonations = async (req, res) => {
   try {
-    const userId = req.auth?.userId;
+    const userId = req.query.userId;
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized. No Clerk user ID found.' });
+      return res.status(400).json({ error: 'User ID is required' });
     }
 
     const donations = await DonationRequest.find({ userId }).sort({ createdAt: -1 });
@@ -47,7 +46,7 @@ export const getUserDonations = async (req, res) => {
   }
 };
 
-// Admin action (accept/reject donation)
+// ✅ Admin: Update donation request status (accept/reject)
 export const updateDonationStatus = async (req, res) => {
   const { id } = req.params;
   const { status, adminRemarks } = req.body;
@@ -64,7 +63,7 @@ export const updateDonationStatus = async (req, res) => {
   }
 };
 
-// User confirms donation response
+// ✅ User confirms the hospital's response
 export const confirmDonationResponse = async (req, res) => {
   const { id } = req.params;
 
