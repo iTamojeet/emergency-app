@@ -9,6 +9,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import smsRoutes from './src/routes/smsRoutes.js';
 import hospitalFetchRoute from './src/routes/hospitalFetchRoute.js';
+import newhospitalRoute from "./src/routes/newhospitalRoute.js";
+import policestationRoute from "./src/routes/policeStationRoute.js";
 
 
 // ES Modules path configuration
@@ -41,8 +43,10 @@ app.set('views', path.join(__dirname, 'src', 'views'));
 // Routes
 //app.use('/api', emergencyRoutes);
 app.use('/api/donations', donationRoutes);
-app.use('/', smsRoutes);
-app.use('/api', hospitalFetchRoute);                        //SMS Route
+app.use('/', smsRoutes);                              //SMS Route
+app.use('/api/hospital',newhospitalRoute);
+app.use('/api/police',policestationRoute);
+app.use('/api', hospitalFetchRoute);                        
 
 // app.use('/api/hospitals', hospitalRoutes);
 // app.use('/api/requests', requestRoutes);
