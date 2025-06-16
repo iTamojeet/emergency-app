@@ -1,13 +1,14 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 export default function PoliceStationRegistrationForm() {
-  const [formData, setFormData] = useState({
-    stationName: "",
-    address: "",
-    phone: "",
-    email: "",
-    username: "",
-    password: "",
+  const [formData, setFormData] = useState({ 
+    name: "", 
+    address: "", 
+    phone: "", 
+    email: "", 
+    username: "", 
+    password: "" 
   });
 
   const handleChange = (e) => {
@@ -15,13 +16,32 @@ export default function PoliceStationRegistrationForm() {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }));
+    }))
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting:", formData);
-    // Submit formData to your backend or API
+
+    console.log('About to submit form with data!', formData);
+    
+    try {
+      // Send a POST request to your backend API
+      const res = await axios.post("http://localhost:3000/api/police/register", formData);
+      console.log("Registration successful!", res.data);
+      alert("Registration successful!");
+      // Clear form after submission
+      setFormData({ 
+        name: "", 
+        address: "", 
+        phone: "", 
+        email: "", 
+        username: "", 
+        password: "" 
+      });
+    } catch (err) {
+      console.error("Registration failed.", err?.response?.data?.message);
+      alert(err?.response?.data?.message || "Registration failed.");
+    }
   };
 
   return (
@@ -33,7 +53,8 @@ export default function PoliceStationRegistrationForm() {
             <label>Police Station Name</label>
             <input
               type="text"
-              name="stationName"
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               required
               className="w-full p-2 border rounded"
@@ -44,6 +65,7 @@ export default function PoliceStationRegistrationForm() {
             <input
               type="text"
               name="address"
+              value={formData.address}
               onChange={handleChange}
               required
               className="w-full p-2 border rounded"
@@ -54,6 +76,7 @@ export default function PoliceStationRegistrationForm() {
             <input
               type="tel"
               name="phone"
+              value={formData.phone}
               onChange={handleChange}
               required
               className="w-full p-2 border rounded"
@@ -64,6 +87,7 @@ export default function PoliceStationRegistrationForm() {
             <input
               type="email"
               name="email"
+              value={formData.email}
               onChange={handleChange}
               required
               className="w-full p-2 border rounded"
@@ -74,6 +98,7 @@ export default function PoliceStationRegistrationForm() {
             <input
               type="text"
               name="username"
+              value={formData.username}
               onChange={handleChange}
               required
               className="w-full p-2 border rounded"
@@ -84,6 +109,7 @@ export default function PoliceStationRegistrationForm() {
             <input
               type="password"
               name="password"
+              value={formData.password}
               onChange={handleChange}
               required
               className="w-full p-2 border rounded"
@@ -98,5 +124,6 @@ export default function PoliceStationRegistrationForm() {
         </form>
       </div>
     </div>
-  );
-} 
+  )
+}
+

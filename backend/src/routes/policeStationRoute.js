@@ -1,5 +1,5 @@
 import express from "express";
-import { createPoliceStation, policeLogin } from "../controllers/policeStationController.js";
+import { createPoliceStation, policeLogin } from "../controller/policeStationController.js";
 
 const router = express.Router();
 
