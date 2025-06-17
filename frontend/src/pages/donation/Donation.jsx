@@ -1,11 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 
 function Donation() {
   const { user, isSignedIn } = useUser();
+
   const [type, setType] = useState('blood');
   const [details, setDetails] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('');
+  const [hasDisease, setHasDisease] = useState(false);
+  const [diseaseDetails, setDiseaseDetails] = useState('');
+  const [organType, setOrganType] = useState('');
+  const [isLivingDonor, setIsLivingDonor] = useState(false);
+  const [relationToRecipient, setRelationToRecipient] = useState('');
+  const [hospitalId, setHospitalId] = useState('');
+  const [hospitalName, setHospitalName] = useState('');
+  const [hospitals, setHospitals] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  // Fetch hospitals on component mount
+  useEffect(() => {
+    fetchHospitals();
+  }, []);
+
+  const fetchHospitals = async () => {
+    try {
+      const res = await fetch('http://localhost:3000/api/register');
+      if (res.ok) {
+        const data = await res.json();
+        setHospitals(data);
+      }
+    } catch (err) {
+      console.error('Error fetching hospitals:', err);
+    }
+  };
+
+  const handleHospitalChange = (e) => {
+    const selectedHospitalId = e.target.value;
+    setHospitalId(selectedHospitalId);
+    
+    // Find the hospital name based on selected ID
+    const selectedHospital = hospitals.find(h => h._id === selectedHospitalId);
+    setHospitalName(selectedHospital ? selectedHospital.name : '');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,28 +52,65 @@ function Donation() {
       return;
     }
 
+    if (!hospitalId || !hospitalName) {
+      setMessage('Please select a hospital.');
+      return;
+    }
+
+    setLoading(true);
+
+    const body = {
+      type,
+      details,
+      userId: user.id,
+      hospitalId,
+      hospitalName,
+    };
+
+    if (type === 'blood') {
+      body.bloodGroup = bloodGroup;
+      body.hasDisease = hasDisease;
+      if (hasDisease) {
+        body.diseaseDetails = diseaseDetails;
+      }
+    }
+
+    if (type === 'organ') {
+      body.organType = organType;
+      body.isLivingDonor = isLivingDonor;
+      if (isLivingDonor) {
+        body.relationToRecipient = relationToRecipient;
+      }
+    }
+
     try {
       const res = await fetch('http://localhost:3000/api/donations', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          type,
-          details,
-          userId: user.id
-        })
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.error || 'Something went wrong');
 
       setMessage('✅ Donation request submitted successfully!');
-      setDetails('');
+      // Reset form
       setType('blood');
+      setDetails('');
+      setBloodGroup('');
+      setHasDisease(false);
+      setDiseaseDetails('');
+      setOrganType('');
+      setIsLivingDonor(false);
+      setRelationToRecipient('');
+      setHospitalId('');
+      setHospitalName('');
     } catch (err) {
       setMessage(`❌ Error: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,14 +133,175 @@ function Donation() {
           </select>
         </div>
 
-        {/* Details */}
+        {/* Hospital Selection */}
+        <div>
+          <label className="block mb-1 font-medium text-gray-700">Select Hospital *</label>
+          <select
+            value={hospitalId}
+            onChange={handleHospitalChange}
+            className="w-full border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring focus:ring-blue-300"
+            required
+          >
+            <option value="">-- Select Hospital --</option>
+            {hospitals.map((hospital) => (
+              <option key={hospital._id} value={hospital._id}>
+                🏥 {hospital.name} - {hospital.location || hospital.address}
+              </option>
+            ))}
+          </select>
+          {hospitals.length === 0 && (
+            <p className="text-sm text-gray-500 mt-1">Loading hospitals...</p>
+          )}
+        </div>
+
+        {/* Blood Donation Fields */}
+        {type === 'blood' && (
+          <>
+            {/* Blood Group */}
+            <div>
+              <label className="block mb-1 font-medium text-gray-700">Blood Group *</label>
+              <select
+                value={bloodGroup}
+                onChange={(e) => setBloodGroup(e.target.value)}
+                className="w-full border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring focus:ring-blue-300"
+                required
+              >
+                <option value="">-- Select Blood Group --</option>
+                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((group) => (
+                  <option key={group} value={group}>
+                    🩸 {group}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Disease Yes/No */}
+            <div>
+              <label className="block mb-1 font-medium text-gray-700">Do you have any diseases? *</label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="hasDisease"
+                    value="true" 
+                    checked={hasDisease === true} 
+                    onChange={() => setHasDisease(true)}
+                    className="text-blue-600"
+                  />
+                  Yes
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="hasDisease"
+                    value="false" 
+                    checked={hasDisease === false} 
+                    onChange={() => setHasDisease(false)}
+                    className="text-blue-600"
+                  />
+                  No
+                </label>
+              </div>
+            </div>
+
+            {hasDisease && (
+              <div>
+                <label className="block mb-1 font-medium text-gray-700">Disease Details *</label>
+                <input
+                  type="text"
+                  value={diseaseDetails}
+                  onChange={(e) => setDiseaseDetails(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
+                  placeholder="Describe the disease"
+                  required
+                />
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Organ Donation Fields */}
+        {type === 'organ' && (
+          <>
+            {/* Organ Type */}
+            <div>
+              <label className="block mb-1 font-medium text-gray-700">Organ Type *</label>
+              <select
+                value={organType}
+                onChange={(e) => setOrganType(e.target.value)}
+                className="w-full border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring focus:ring-blue-300"
+                required
+              >
+                <option value="">-- Select Organ --</option>
+                {[
+                  { value: 'kidney', label: '🫘 Kidney' },
+                  { value: 'liver', label: '🫁 Liver' },
+                  { value: 'heart', label: '❤️ Heart' },
+                  { value: 'lungs', label: '🫁 Lungs' },
+                  { value: 'pancreas', label: '🥞 Pancreas' },
+                  { value: 'intestine', label: '🧠 Intestine' },
+                  { value: 'other', label: '🔬 Other' }
+                ].map((organ) => (
+                  <option key={organ.value} value={organ.value}>
+                    {organ.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Living Donor */}
+            <div>
+              <label className="block mb-1 font-medium text-gray-700">Are you a living donor? *</label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="isLivingDonor"
+                    value="true" 
+                    checked={isLivingDonor === true} 
+                    onChange={() => setIsLivingDonor(true)}
+                    className="text-blue-600"
+                  />
+                  Yes
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="isLivingDonor"
+                    value="false" 
+                    checked={isLivingDonor === false} 
+                    onChange={() => setIsLivingDonor(false)}
+                    className="text-blue-600"
+                  />
+                  No
+                </label>
+              </div>
+            </div>
+
+            {isLivingDonor && (
+              <div>
+                <label className="block mb-1 font-medium text-gray-700">Relation to Recipient *</label>
+                <input
+                  type="text"
+                  value={relationToRecipient}
+                  onChange={(e) => setRelationToRecipient(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
+                  placeholder="e.g., Father, Friend, Stranger"
+                  required
+                />
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Common Details */}
         <div>
           <label className="block mb-1 font-medium text-gray-700">Additional Details</label>
           <textarea
             value={details}
             onChange={(e) => setDetails(e.target.value)}
             className="w-full border border-gray-300 rounded-md p-3 h-32 focus:outline-none focus:ring focus:ring-blue-300"
-            placeholder="Mention location, blood group, urgency, or any specific request"
+            placeholder="Mention urgency level, any special requirements, contact preferences, etc."
             required
           />
         </div>
@@ -75,15 +310,24 @@ function Donation() {
         <div className="text-center">
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-md transition duration-200"
+            disabled={loading}
+            className={`font-semibold py-3 px-8 rounded-md transition-colors ${
+              loading 
+                ? 'bg-gray-400 cursor-not-allowed text-white' 
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+            }`}
           >
-            Submit Request
+            {loading ? 'Submitting...' : 'Submit Donation Request'}
           </button>
         </div>
 
         {/* Message */}
         {message && (
-          <div className="text-center mt-4 text-sm text-gray-800 bg-gray-100 rounded-md p-2">
+          <div className={`text-center mt-4 text-sm rounded-md p-3 ${
+            message.includes('✅') 
+              ? 'text-green-800 bg-green-100 border border-green-200' 
+              : 'text-red-800 bg-red-100 border border-red-200'
+          }`}>
             {message}
           </div>
         )}
