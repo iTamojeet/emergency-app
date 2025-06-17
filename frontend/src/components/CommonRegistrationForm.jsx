@@ -7,29 +7,37 @@ export default function CommonAuthForm() {
 
   const [role, setRole] = useState(""); // 'police' or 'hospital'
   const [authType, setAuthType] = useState("register"); // 'register' or 'login'
-  const [formData, setFormData] = useState({
-    name: "",
-    address: "",
-    phone: "",
-    email: "",
-    username: "",
-    password: "",
+  const [formData, setFormData] = useState({ 
+    name: "", 
+    address: "", 
+    phone: "", 
+    email: "", 
+    username: "", 
+    password: "" 
   });
 
   const handleRoleChange = (e) => {
     setRole(e.target.value);
-    setFormData({
-      name: "",
-      address: "",
-      phone: "",
-      email: "",
-      username: "",
-      password: "",
+    setFormData({ 
+      name: "", 
+      address: "", 
+      phone: "", 
+      email: "", 
+      username: "", 
+      password: "" 
     });
   };
 
   const handleAuthTypeChange = (type) => {
     setAuthType(type);
+    setFormData({ 
+      name: "", 
+      address: "", 
+      phone: "", 
+      email: "", 
+      username: "", 
+      password: "" 
+    });
   };
 
   const handleChange = (e) => {
@@ -37,7 +45,7 @@ export default function CommonAuthForm() {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }));
+    }))
   };
 
   const handleSubmit = async (e) => {
@@ -47,12 +55,15 @@ export default function CommonAuthForm() {
       alert("Please select Police or Hospital.");
       return;
     }
-
+  
     const endpointBase = `http://localhost:3000/api/${role}`;
-    const endpoint =
-      authType === "register" ? `${endpointBase}/register` : `${endpointBase}/login`;
 
-    const payload =
+    // If registering, we send all formData; if logging in, we send only credentials
+    const endpoint = authType === "register" 
+      ? `${endpointBase}/register` 
+      : `${endpointBase}/login`;
+
+    const payload = 
       authType === "register" ? formData : {
         username: formData.username,
         password: formData.password,
@@ -61,8 +72,21 @@ export default function CommonAuthForm() {
     try {
       const res = await axios.post(endpoint, payload);
       alert(`${authType === "register" ? "Registration" : "Login"} successful!`);
-      console.log("Response:", res.data);
-      navigate(`/${role}/admin`);
+
+      if (authType === "login") {
+        // Only navigate after login
+        navigate(`/${role}/admin`);
+      } else {
+        // After registration, clear form or show a message
+        setFormData({ 
+          name: "", 
+          address: "", 
+          phone: "", 
+          email: "", 
+          username: "", 
+          password: "" 
+        });
+      }
     } catch (err) {
       console.error("Auth failed:", err?.response?.data?.message);
       alert(err?.response?.data?.message || "Something went wrong.");
@@ -71,11 +95,15 @@ export default function CommonAuthForm() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 shadow-xl bg-white mt-10">
-      <h2 className="text-2xl font-bold mb-6 text-center">Police / Hospital Portal</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">
+        Police / Hospital Portal
+      </h2>
 
       {/* Role selection */}
       <div className="mb-4">
-        <label className="font-semibold block mb-2">Select Role:</label>
+        <label className="font-semibold block mb-2">
+          Select Role:
+        </label>
         <select
           value={role}
           onChange={handleRoleChange}
@@ -87,7 +115,7 @@ export default function CommonAuthForm() {
         </select>
       </div>
 
-      {/* Auth type selection */}
+      {/* Auth Type Selection */}
       <div className="flex justify-center gap-4 mb-6">
         <button
           type="button"
@@ -117,46 +145,46 @@ export default function CommonAuthForm() {
               <div>
                 <label>{role === "police" ? "Police Station Name" : "Hospital Name"}</label>
                 <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full p-2 border rounded"
-                />
+                   type="text"
+                   name="name"
+                   value={formData.name}
+                   onChange={handleChange}
+                   required
+                   className="w-full p-2 border rounded"
+                 />
               </div>
               <div>
                 <label>Address</label>
                 <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  required
-                  className="w-full p-2 border rounded"
-                />
+                   type="text"
+                   name="address"
+                   value={formData.address}
+                   onChange={handleChange}
+                   required
+                   className="w-full p-2 border rounded"
+                 />
               </div>
               <div>
                 <label>Phone</label>
                 <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  required
-                  className="w-full p-2 border rounded"
-                />
+                   type="tel"
+                   name="phone"
+                   value={formData.phone}
+                   onChange={handleChange}
+                   required
+                   className="w-full p-2 border rounded"
+                 />
               </div>
               <div>
                 <label>Email</label>
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full p-2 border rounded"
-                />
+                   type="email"
+                   name="email"
+                   value={formData.email}
+                   onChange={handleChange}
+                   required
+                   className="w-full p-2 border rounded"
+                 />
               </div>
             </>
           )}
@@ -164,24 +192,24 @@ export default function CommonAuthForm() {
           <div>
             <label>Username</label>
             <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
+               type="text"
+               name="username"
+               value={formData.username}
+               onChange={handleChange}
+               required
+               className="w-full p-2 border rounded"
+             />
           </div>
           <div>
             <label>Password</label>
             <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
+               type="password"
+               name="password"
+               value={formData.password}
+               onChange={handleChange}
+               required
+               className="w-full p-2 border rounded"
+             />
           </div>
 
           <button
@@ -192,6 +220,7 @@ export default function CommonAuthForm() {
           </button>
         </form>
       )}
+
     </div>
-  );
+  )
 }

@@ -55,11 +55,11 @@ export const policeLogin = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials!" });
     }
   
-    const token = jwt.sign({ id: police._id, role:'police' }, process.env.SECRET_KEY, { expiresIn:'1h' });
+    const token = jwt.sign({ id: police._id, role:'police' }, process.env.POLICE_SECRET_KEY, { expiresIn:'1h' });
 
     res.json({ message: "Login successful!", token });
   } catch (error) {
     res.status(500).json({ message: "Server Error!", error: error.toString() });
-  }
+  } 
 };
 

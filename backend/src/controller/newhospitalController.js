@@ -55,7 +55,7 @@ export const hospitalLogin = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials!" });
     }
   
-    const token = jwt.sign({ id: hospital._id, role:'hospital' }, process.env.SECRET_KEY, { expiresIn:'1h' });
+    const token = jwt.sign({ id: hospital._id, role:'hospital' }, process.env.HOSPITAL_SECRET_KEY, { expiresIn:'1h' });
 
     res.json({ message: "Login successful!", token });
   } catch (error) {
