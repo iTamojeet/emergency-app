@@ -2,7 +2,7 @@ import NewHospitals from "../models/NewHospitals.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-// Register
+// Register Hospital
 export const createHospital = async (req, res) => {
   try {
     const { name, address, phone, email, username, password } = req.body;
@@ -37,6 +37,7 @@ export const createHospital = async (req, res) => {
   }
 };
 
+//Login Hospital
 export const hospitalLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -63,3 +64,12 @@ export const hospitalLogin = async (req, res) => {
   }
 };
 
+// Get all hospitals
+export const getAllHospitals = async (req, res) => {
+  try {
+    const hospitals = await NewHospitals.find({});
+    res.json(hospitals);
+  } catch (err) {
+    res.status(500).json({ message: "Server Error", error: err });
+  }
+};
