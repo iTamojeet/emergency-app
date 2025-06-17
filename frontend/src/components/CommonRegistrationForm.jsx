@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-export default function CommonRegistrationForm() {
+export default function CommonAuthForm() {
   const navigate = useNavigate();
 
   const [role, setRole] = useState(""); // 'police' or 'hospital'
+  const [authType, setAuthType] = useState("register"); // 'register' or 'login'
   const [formData, setFormData] = useState({
     name: "",
     address: "",
@@ -17,7 +18,6 @@ export default function CommonRegistrationForm() {
 
   const handleRoleChange = (e) => {
     setRole(e.target.value);
-    // Clear form data when role changes
     setFormData({
       name: "",
       address: "",
@@ -26,6 +26,10 @@ export default function CommonRegistrationForm() {
       username: "",
       password: "",
     });
+  };
+
+  const handleAuthTypeChange = (type) => {
+    setAuthType(type);
   };
 
   const handleChange = (e) => {
@@ -44,97 +48,118 @@ export default function CommonRegistrationForm() {
       return;
     }
 
+    const endpointBase = `http://localhost:3000/api/${role}`;
     const endpoint =
-      role === "police"
-        ? "http://localhost:3000/api/police/register"
-        : "http://localhost:3000/api/hospital/register";
+      authType === "register" ? `${endpointBase}/register` : `${endpointBase}/login`;
+
+    const payload =
+      authType === "register" ? formData : {
+        username: formData.username,
+        password: formData.password,
+      };
 
     try {
-      const res = await axios.post(endpoint, formData);
-      alert("Registration successful!");
+      const res = await axios.post(endpoint, payload);
+      alert(`${authType === "register" ? "Registration" : "Login"} successful!`);
       console.log("Response:", res.data);
-
-      // Redirect based on role
-      if (role === "police") {
-        navigate("/police/admin");
-      } else {
-        navigate("/hospital/admin");
-      }
+      navigate(`/${role}/admin`);
     } catch (err) {
-      console.error("Registration failed:", err?.response?.data?.message);
-      alert(err?.response?.data?.message || "Registration failed.");
+      console.error("Auth failed:", err?.response?.data?.message);
+      alert(err?.response?.data?.message || "Something went wrong.");
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto p-6 shadow-xl bg-white mt-10">
-      <h2 className="text-2xl font-bold mb-6 text-center">Registration Form</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">Police / Hospital Portal</h2>
 
       {/* Role selection */}
-      <div className="mb-6">
-        <label className="font-semibold block mb-2">Register As:</label>
+      <div className="mb-4">
+        <label className="font-semibold block mb-2">Select Role:</label>
         <select
           value={role}
           onChange={handleRoleChange}
           className="w-full p-2 border rounded"
-          required
         >
-          <option value="">-- Select Role --</option>
+          <option value="">-- Select --</option>
           <option value="police">Police Station</option>
           <option value="hospital">Hospital</option>
         </select>
       </div>
 
-      {/* Dynamic form based on role */}
+      {/* Auth type selection */}
+      <div className="flex justify-center gap-4 mb-6">
+        <button
+          type="button"
+          className={`px-4 py-2 rounded ${
+            authType === "register" ? "bg-blue-600 text-white" : "bg-gray-200"
+          }`}
+          onClick={() => handleAuthTypeChange("register")}
+        >
+          Register
+        </button>
+        <button
+          type="button"
+          className={`px-4 py-2 rounded ${
+            authType === "login" ? "bg-blue-600 text-white" : "bg-gray-200"
+          }`}
+          onClick={() => handleAuthTypeChange("login")}
+        >
+          Login
+        </button>
+      </div>
+
+      {/* Form */}
       {role && (
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
-          <div>
-            <label>{role === "police" ? "Police Station Name" : "Hospital Name"}</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
-
-          <div>
-            <label>Address</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
-
-          <div>
-            <label>Phone Number</label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
-
-          <div>
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
+          {authType === "register" && (
+            <>
+              <div>
+                <label>{role === "police" ? "Police Station Name" : "Hospital Name"}</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+              <div>
+                <label>Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+              <div>
+                <label>Phone</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+              <div>
+                <label>Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+            </>
+          )}
 
           <div>
             <label>Username</label>
@@ -147,7 +172,6 @@ export default function CommonRegistrationForm() {
               className="w-full p-2 border rounded"
             />
           </div>
-
           <div>
             <label>Password</label>
             <input
@@ -164,7 +188,7 @@ export default function CommonRegistrationForm() {
             type="submit"
             className="mt-4 bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
           >
-            Register
+            {authType === "register" ? "Register" : "Login"}
           </button>
         </form>
       )}
