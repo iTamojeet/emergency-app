@@ -3,16 +3,45 @@ import DonationRequest from '../models/DonationRequest.js';
 // ✅ Create new donation request (userId comes from body)
 export const createDonations = async (req, res) => {
   try {
-    const userId = req.body.userId;
+    const {
+      userId,
+      type,
+      bloodGroup,
+      hasDisease,
+      diseaseDetails,
+        hospitalId,
+  hospitalName,
+    } = req.body;
 
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized. No user ID provided.' });
     }
 
-    const donation = await DonationRequest.create({
-      ...req.body,
-      userId,
-    });
+    if (!type) {
+      return res.status(400).json({ error: 'type is required.' });
+    }
+
+    if (type === 'blood') {
+      const validBloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+      if (!validBloodGroups.includes(bloodGroup)) {
+        return res.status(400).json({ error: 'Invalid or missing blood group.' });
+      }
+
+      if (typeof hasDisease !== 'boolean') {
+        return res.status(400).json({ error: 'hasDisease must be a boolean value.' });
+      }
+
+      if (hasDisease && !diseaseDetails) {
+        return res.status(400).json({ error: 'Please provide disease details.' });
+      }
+    }
+
+    if (!hospitalId || !hospitalName) {
+  return res.status(400).json({ error: 'Hospital ID and name are required.' });
+}
+
+    const donation = await DonationRequest.create(req.body);
 
     res.status(201).json(donation);
   } catch (err) {
