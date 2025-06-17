@@ -13,6 +13,9 @@ import Profile from './pages/user/Profile';
 import AdminDashboard from './pages/Hospital/AdminDashboard';
 import HospitalReg from './pages/Hospital/HospitalReg';
 import PoliceReg from './pages/Police/PoliceReg';
+import HospitalAdminDashboard from './pages/Hospital/AdminDashboard';
+import PoliceAdminDashboard from './pages/Police/PoliceAdminDashboard';
+import CommonRegistrationForm from './components/CommonRegistrationForm';
 
 export default function App() {
   return (
@@ -55,11 +58,9 @@ export default function App() {
           }
         />
 
-        <Route path="/hospital/admin/dashboard" element={<AdminDashboard />} />
-        
-        <Route path="/hospital/registration" element={<HospitalReg />} />
-
-        <Route path="/police/registration" element={<PoliceReg />} />
+         <Route path="/register" element={<CommonRegistrationForm />} />
+  <Route path="/police/admin" element={<PoliceAdminDashboard />} />
+  <Route path="/hospital/admin" element={<HospitalAdminDashboard />} />
 
         {/* Catch-all route to redirect unknown paths to home */}
         <Route path="*" element={<Navigate to="/" />} />

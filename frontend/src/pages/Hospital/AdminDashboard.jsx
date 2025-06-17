@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-function AdminDashboard() {
+function HospitalAdminDashboard() {
   const [donations, setDonations] = useState([]);
   const [message, setMessage] = useState('');
 
@@ -80,4 +80,4 @@ function AdminDashboard() {
   );
 }
 
-export default AdminDashboard;
+export default HospitalAdminDashboard;
