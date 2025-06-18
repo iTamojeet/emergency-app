@@ -18,30 +18,48 @@ function Donation() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  // Fetch hospitals on component mount
   useEffect(() => {
-    fetchHospitals();
-  }, []);
+    const delay = setTimeout(() => {
+      if (hospitalName.trim() === '') {
+        fetchAllHospitals();
+      } else {
+        fetchHospitalsByName(hospitalName);
+      }
+    }, 300); // debounce
 
-  const fetchHospitals = async () => {
+    return () => clearTimeout(delay);
+  }, [hospitalName]);
+
+  const fetchAllHospitals = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/register');
+      const res = await fetch(`http://localhost:3000/api/hospital/all`);
       if (res.ok) {
         const data = await res.json();
         setHospitals(data);
+      } else {
+        setHospitals([]);
       }
     } catch (err) {
-      console.error('Error fetching hospitals:', err);
+      console.error('Error fetching all hospitals:', err);
+      setHospitals([]);
     }
   };
 
-  const handleHospitalChange = (e) => {
-    const selectedHospitalId = e.target.value;
-    setHospitalId(selectedHospitalId);
-    
-    // Find the hospital name based on selected ID
-    const selectedHospital = hospitals.find(h => h._id === selectedHospitalId);
-    setHospitalName(selectedHospital ? selectedHospital.name : '');
+  const fetchHospitalsByName = async (query) => {
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/hospital/search?name=${encodeURIComponent(query)}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setHospitals(data);
+      } else {
+        setHospitals([]);
+      }
+    } catch (err) {
+      console.error('Error searching hospitals:', err);
+      setHospitals([]);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -86,9 +104,7 @@ function Donation() {
     try {
       const res = await fetch('http://localhost:3000/api/donations', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
@@ -107,6 +123,7 @@ function Donation() {
       setRelationToRecipient('');
       setHospitalId('');
       setHospitalName('');
+      setHospitals([]);
     } catch (err) {
       setMessage(`❌ Error: ${err.message}`);
     } finally {
@@ -133,31 +150,48 @@ function Donation() {
           </select>
         </div>
 
-        {/* Hospital Selection */}
-        <div>
-          <label className="block mb-1 font-medium text-gray-700">Select Hospital *</label>
-          <select
-            value={hospitalId}
-            onChange={handleHospitalChange}
-            className="w-full border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring focus:ring-blue-300"
+        {/* Hospital Search */}
+        <div className="relative">
+          <label className="block mb-1 font-medium text-gray-700">Search & Select Hospital *</label>
+          <input
+            type="text"
+            placeholder="Search hospital by name..."
+            value={hospitalName}
+            onChange={(e) => {
+              setHospitalName(e.target.value);
+              setHospitalId('');
+            }}
+            className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
             required
-          >
-            <option value="">-- Select Hospital --</option>
-            {hospitals.map((hospital) => (
-              <option key={hospital._id} value={hospital._id}>
-                🏥 {hospital.name} - {hospital.location || hospital.address}
-              </option>
-            ))}
-          </select>
-          {hospitals.length === 0 && (
-            <p className="text-sm text-gray-500 mt-1">Loading hospitals...</p>
+          />
+
+          {/* Dropdown */}
+          {hospitalName !== '' && (
+            <div className="absolute w-full border border-gray-300 rounded-md bg-white shadow z-10 max-h-60 overflow-y-auto">
+              {hospitals.length > 0 ? (
+                hospitals.map((hospital) => (
+                  <div
+                    key={hospital._id}
+                    onClick={() => {
+                      setHospitalId(hospital._id);
+                      setHospitalName(hospital.name);
+                      setHospitals([]);
+                    }}
+                    className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
+                  >
+                    🏥 {hospital.name} - {hospital.location || hospital.address}
+                  </div>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-gray-500">❌ No Hospitals Found</div>
+              )}
+            </div>
           )}
         </div>
 
         {/* Blood Donation Fields */}
         {type === 'blood' && (
           <>
-            {/* Blood Group */}
             <div>
               <label className="block mb-1 font-medium text-gray-700">Blood Group *</label>
               <select
@@ -175,27 +209,26 @@ function Donation() {
               </select>
             </div>
 
-            {/* Disease Yes/No */}
             <div>
               <label className="block mb-1 font-medium text-gray-700">Do you have any diseases? *</label>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input 
-                    type="radio" 
+                  <input
+                    type="radio"
                     name="hasDisease"
-                    value="true" 
-                    checked={hasDisease === true} 
+                    value="true"
+                    checked={hasDisease === true}
                     onChange={() => setHasDisease(true)}
                     className="text-blue-600"
                   />
                   Yes
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input 
-                    type="radio" 
+                  <input
+                    type="radio"
                     name="hasDisease"
-                    value="false" 
-                    checked={hasDisease === false} 
+                    value="false"
+                    checked={hasDisease === false}
                     onChange={() => setHasDisease(false)}
                     className="text-blue-600"
                   />
@@ -223,7 +256,6 @@ function Donation() {
         {/* Organ Donation Fields */}
         {type === 'organ' && (
           <>
-            {/* Organ Type */}
             <div>
               <label className="block mb-1 font-medium text-gray-700">Organ Type *</label>
               <select
@@ -240,7 +272,7 @@ function Donation() {
                   { value: 'lungs', label: '🫁 Lungs' },
                   { value: 'pancreas', label: '🥞 Pancreas' },
                   { value: 'intestine', label: '🧠 Intestine' },
-                  { value: 'other', label: '🔬 Other' }
+                  { value: 'other', label: '🔬 Other' },
                 ].map((organ) => (
                   <option key={organ.value} value={organ.value}>
                     {organ.label}
@@ -249,27 +281,26 @@ function Donation() {
               </select>
             </div>
 
-            {/* Living Donor */}
             <div>
               <label className="block mb-1 font-medium text-gray-700">Are you a living donor? *</label>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input 
-                    type="radio" 
+                  <input
+                    type="radio"
                     name="isLivingDonor"
-                    value="true" 
-                    checked={isLivingDonor === true} 
+                    value="true"
+                    checked={isLivingDonor === true}
                     onChange={() => setIsLivingDonor(true)}
                     className="text-blue-600"
                   />
                   Yes
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input 
-                    type="radio" 
+                  <input
+                    type="radio"
                     name="isLivingDonor"
-                    value="false" 
-                    checked={isLivingDonor === false} 
+                    value="false"
+                    checked={isLivingDonor === false}
                     onChange={() => setIsLivingDonor(false)}
                     className="text-blue-600"
                   />
@@ -294,7 +325,7 @@ function Donation() {
           </>
         )}
 
-        {/* Common Details */}
+        {/* Additional Details */}
         <div>
           <label className="block mb-1 font-medium text-gray-700">Additional Details</label>
           <textarea
@@ -312,8 +343,8 @@ function Donation() {
             type="submit"
             disabled={loading}
             className={`font-semibold py-3 px-8 rounded-md transition-colors ${
-              loading 
-                ? 'bg-gray-400 cursor-not-allowed text-white' 
+              loading
+                ? 'bg-gray-400 cursor-not-allowed text-white'
                 : 'bg-blue-600 hover:bg-blue-700 text-white'
             }`}
           >
@@ -323,11 +354,13 @@ function Donation() {
 
         {/* Message */}
         {message && (
-          <div className={`text-center mt-4 text-sm rounded-md p-3 ${
-            message.includes('✅') 
-              ? 'text-green-800 bg-green-100 border border-green-200' 
-              : 'text-red-800 bg-red-100 border border-red-200'
-          }`}>
+          <div
+            className={`text-center mt-4 text-sm rounded-md p-3 ${
+              message.includes('✅')
+                ? 'text-green-800 bg-green-100 border border-green-200'
+                : 'text-red-800 bg-red-100 border border-red-200'
+            }`}
+          >
             {message}
           </div>
         )}
