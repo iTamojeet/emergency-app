@@ -15,6 +15,7 @@ function Donation() {
   const [hospitalId, setHospitalId] = useState('');
   const [hospitalName, setHospitalName] = useState('');
   const [hospitals, setHospitals] = useState([]);
+  const [hasSelectedHospital, setHasSelectedHospital] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -22,23 +23,19 @@ function Donation() {
     const delay = setTimeout(() => {
       if (hospitalName.trim() === '') {
         fetchAllHospitals();
-      } else {
+      } else if (!hasSelectedHospital) {
         fetchHospitalsByName(hospitalName);
       }
-    }, 300); // debounce
+    }, 300);
 
     return () => clearTimeout(delay);
-  }, [hospitalName]);
+  }, [hospitalName, hasSelectedHospital]);
 
   const fetchAllHospitals = async () => {
     try {
       const res = await fetch(`http://localhost:3000/api/hospital/all`);
-      if (res.ok) {
-        const data = await res.json();
-        setHospitals(data);
-      } else {
-        setHospitals([]);
-      }
+      const data = await res.json();
+      setHospitals(data);
     } catch (err) {
       console.error('Error fetching all hospitals:', err);
       setHospitals([]);
@@ -50,12 +47,8 @@ function Donation() {
       const res = await fetch(
         `http://localhost:3000/api/hospital/search?name=${encodeURIComponent(query)}`
       );
-      if (res.ok) {
-        const data = await res.json();
-        setHospitals(data);
-      } else {
-        setHospitals([]);
-      }
+      const data = await res.json();
+      setHospitals(data);
     } catch (err) {
       console.error('Error searching hospitals:', err);
       setHospitals([]);
@@ -66,12 +59,12 @@ function Donation() {
     e.preventDefault();
 
     if (!isSignedIn) {
-      setMessage('You must be signed in to submit a donation.');
+      setMessage('❌ You must be signed in to submit a donation.');
       return;
     }
 
     if (!hospitalId || !hospitalName) {
-      setMessage('Please select a hospital.');
+      setMessage('❌ Please select a hospital.');
       return;
     }
 
@@ -123,6 +116,7 @@ function Donation() {
       setRelationToRecipient('');
       setHospitalId('');
       setHospitalName('');
+      setHasSelectedHospital(false);
       setHospitals([]);
     } catch (err) {
       setMessage(`❌ Error: ${err.message}`);
@@ -142,7 +136,7 @@ function Donation() {
           <select
             value={type}
             onChange={(e) => setType(e.target.value)}
-            className="w-full border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring focus:ring-blue-300"
+            className="w-full border-gray-300 rounded-md shadow-sm p-2"
             required
           >
             <option value="blood">🩸 Blood</option>
@@ -160,32 +154,39 @@ function Donation() {
             onChange={(e) => {
               setHospitalName(e.target.value);
               setHospitalId('');
+              setHasSelectedHospital(false);
             }}
-            className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
+            className="w-full border border-gray-300 rounded-md p-2"
             required
           />
 
           {/* Dropdown */}
-          {hospitalName !== '' && (
+          {hospitalName !== '' && hospitals.length > 0 && !hasSelectedHospital && (
             <div className="absolute w-full border border-gray-300 rounded-md bg-white shadow z-10 max-h-60 overflow-y-auto">
-              {hospitals.length > 0 ? (
-                hospitals.map((hospital) => (
-                  <div
-                    key={hospital._id}
-                    onClick={() => {
-                      setHospitalId(hospital._id);
-                      setHospitalName(hospital.name);
-                      setHospitals([]);
-                    }}
-                    className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
-                  >
-                    🏥 {hospital.name} - {hospital.location || hospital.address}
-                  </div>
-                ))
-              ) : (
-                <div className="px-3 py-2 text-gray-500">❌ No Hospitals Found</div>
-              )}
+              {hospitals.map((hospital) => (
+                <div
+                  key={hospital._id}
+                  onClick={() => {
+                    setHospitalId(hospital.id);
+                    setHospitalName(hospital.name);
+                    setHasSelectedHospital(true);
+                    setHospitals([]);
+                  }}
+                  className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
+                >
+                  🏥 {hospital.name} - {hospital.location || hospital.address}
+                </div>
+              ))}
             </div>
+          )}
+          {hospitalName && hospitals.length === 0 && !hasSelectedHospital && (
+            <div className="absolute w-full border border-gray-300 rounded-md bg-white shadow z-10">
+              <div className="px-3 py-2 text-gray-500">❌ No Hospitals Found</div>
+            </div>
+          )}
+
+          {hasSelectedHospital && hospitalName && (
+            <p className="text-green-700 text-sm mt-1">✅ Selected: {hospitalName}</p>
           )}
         </div>
 
@@ -197,7 +198,7 @@ function Donation() {
               <select
                 value={bloodGroup}
                 onChange={(e) => setBloodGroup(e.target.value)}
-                className="w-full border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring focus:ring-blue-300"
+                className="w-full border-gray-300 rounded-md shadow-sm p-2"
                 required
               >
                 <option value="">-- Select Blood Group --</option>
@@ -216,10 +217,8 @@ function Donation() {
                   <input
                     type="radio"
                     name="hasDisease"
-                    value="true"
                     checked={hasDisease === true}
                     onChange={() => setHasDisease(true)}
-                    className="text-blue-600"
                   />
                   Yes
                 </label>
@@ -227,10 +226,8 @@ function Donation() {
                   <input
                     type="radio"
                     name="hasDisease"
-                    value="false"
                     checked={hasDisease === false}
                     onChange={() => setHasDisease(false)}
-                    className="text-blue-600"
                   />
                   No
                 </label>
@@ -244,7 +241,7 @@ function Donation() {
                   type="text"
                   value={diseaseDetails}
                   onChange={(e) => setDiseaseDetails(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
+                  className="w-full border border-gray-300 rounded-md p-2"
                   placeholder="Describe the disease"
                   required
                 />
@@ -261,7 +258,7 @@ function Donation() {
               <select
                 value={organType}
                 onChange={(e) => setOrganType(e.target.value)}
-                className="w-full border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring focus:ring-blue-300"
+                className="w-full border-gray-300 rounded-md shadow-sm p-2"
                 required
               >
                 <option value="">-- Select Organ --</option>
@@ -288,10 +285,8 @@ function Donation() {
                   <input
                     type="radio"
                     name="isLivingDonor"
-                    value="true"
                     checked={isLivingDonor === true}
                     onChange={() => setIsLivingDonor(true)}
-                    className="text-blue-600"
                   />
                   Yes
                 </label>
@@ -299,10 +294,8 @@ function Donation() {
                   <input
                     type="radio"
                     name="isLivingDonor"
-                    value="false"
                     checked={isLivingDonor === false}
                     onChange={() => setIsLivingDonor(false)}
-                    className="text-blue-600"
                   />
                   No
                 </label>
@@ -316,7 +309,7 @@ function Donation() {
                   type="text"
                   value={relationToRecipient}
                   onChange={(e) => setRelationToRecipient(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
+                  className="w-full border border-gray-300 rounded-md p-2"
                   placeholder="e.g., Father, Friend, Stranger"
                   required
                 />
@@ -331,8 +324,8 @@ function Donation() {
           <textarea
             value={details}
             onChange={(e) => setDetails(e.target.value)}
-            className="w-full border border-gray-300 rounded-md p-3 h-32 focus:outline-none focus:ring focus:ring-blue-300"
-            placeholder="Mention urgency level, any special requirements, contact preferences, etc."
+            className="w-full border border-gray-300 rounded-md p-3 h-32"
+            placeholder="Mention urgency, special needs, contact preferences..."
             required
           />
         </div>
@@ -343,9 +336,7 @@ function Donation() {
             type="submit"
             disabled={loading}
             className={`font-semibold py-3 px-8 rounded-md transition-colors ${
-              loading
-                ? 'bg-gray-400 cursor-not-allowed text-white'
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
+              loading ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
             }`}
           >
             {loading ? 'Submitting...' : 'Submit Donation Request'}
