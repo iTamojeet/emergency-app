@@ -1,6 +1,6 @@
 # 🚨 Emergency FIR System
 
-![Live Demo](https://life-long.vercel.app/)
+- [Live Demo](https://life-long.vercel.app/)
 
 ![Node.js](https://img.shields.io/badge/Node.js-18.x-green?logo=node.js)
 ![React](https://img.shields.io/badge/React-18.x-blue?logo=react)
